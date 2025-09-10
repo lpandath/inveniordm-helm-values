@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: inveniordm
+  namespace: argocd
+spec:
+  project: invenio-project
+  source:
+    repoURL: https://inveniosoftware.github.io/helm-invenio/
+    chart: invenio
+    targetRevision: "0.8.1"
+    helm:
+      values: |
+        host: inveniordm.cyverse.at
+        
+        invenio:
+          init: true
+          demo_data: false
+          default_users:
+            "admin@inveniordm.cyverse.at": "1234567"
+            "user01@inveniordm.cyverse.at": "7891011"
+            "user02@inveniordm.cyverse.at": "121314"
+          extraConfig:
+            SECURITY_REGISTERABLE: "false"
+        
+        postgresql:
+          enabled: true
+          auth:
+            username: "invenio"
+            password: "invenio123"
+            database: "invenio"
+        
+        opensearch:
+          enabled: true
+        
+        redis:
+          enabled: true
+        
+        rabbitmq:
+          enabled: true
+          auth:
+            username: "guest"
+            password: "guest123"
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: inveniordm
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
